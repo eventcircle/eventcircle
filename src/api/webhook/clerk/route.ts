@@ -2,7 +2,7 @@ import { Webhook } from 'svix'
 import { headers } from 'next/headers'
 import { WebhookEvent } from '@clerk/nextjs/server'
 import { createUser, deleteUser, updateUser } from '@/lib/actions/user.actions'
-import { clerkClient } from '@clerk/nextjs'
+import { clerkClient } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
  
 export async function POST(req: Request) {
@@ -66,7 +66,11 @@ export async function POST(req: Request) {
       photo: image_url,
     }
 
-    const newUser = await createUser(user);
+    const newUser = await createUser({
+      ...user,
+      firstName: user.firstName || '', // Set a default value for firstName if it is null
+      lastName: user.lastName || '', // Set a default value for lastName if it is null
+    });
 
     if(newUser) {
       await clerkClient.users.updateUserMetadata(id, {
@@ -83,8 +87,8 @@ export async function POST(req: Request) {
     const {id, image_url, first_name, last_name, username } = evt.data
 
     const user = {
-      firstName: first_name,
-      lastName: last_name,
+      firstName: first_name || '', // Set a default value for firstName if it is null
+      lastName: last_name || '', // Set a default value for lastName if it is null
       username: username!,
       photo: image_url,
     }
